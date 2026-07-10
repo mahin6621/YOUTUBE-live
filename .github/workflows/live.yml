@@ -1,6 +1,10 @@
-name: 24/7 Stream
+name: 24/7 Forza Horizon 5 Live Stream
 
 on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 */5 * * *'
   workflow_dispatch:
 
 jobs:
@@ -8,15 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@v3
 
-    - name: Install Dependencies and FFmpeg
+    - name: Install FFmpeg
       run: |
         sudo apt-get update
-        sudo apt-get install -y ffmpeg python3-pip
-        pip3 install gdown
+        sudo apt-get install -y ffmpeg
 
     - name: Start Live Stream
       run: |
-        gdown "https://drive.google.com/uc?id=1CeugCz7G5EJWGcoN5GW--HZ45TNzWiIF" -O video.mp4
-        ffmpeg -re -stream_loop -1 -i video.mp4 -vcodec libx264 -pix_fmt yuv420p -maxrate 2048k -bufsize 2048k -framerate 30 -g 60 -acodec aac -ar 44100 -b:a 128k -f flv "${{ secrets.YOUTUBE_URL }}/${{ secrets.YOUTUBE_KEY }}"
+        ffmpeg -re -stream_loop -1 -i "video.mp4" \
+        -c:v libx264 -preset veryfast -b:v 3000k -maxrate 3000k -bufsize 6000k \
+        -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
+        -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
