@@ -21,9 +21,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ffmpeg
 
+    - name: Bypass and Download Large Video from Google Drive
+      run: |
+        wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Ip7SzTSphdVEZBe1AIjaMy754agyo7Rh' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_&=-]+).*/\1/p')&id=1Ip7SzTSphdVEZBe1AIjaMy754agyo7Rh" -O video.mp4 && rm -rf /tmp/cookies.txt
+
     - name: Start Live Stream
       run: |
-        ffmpeg -re -stream_loop -1 -i "https://docs.google.com/uc?export=download&id=1Ip7SzTSphdVEZBe1AIjaMy754agyo7Rh" \
+        ffmpeg -re -stream_loop -1 -i video.mp4 \
         -c:v libx264 -preset veryfast -b:v 2500k -maxrate 2500k -bufsize 5000k \
         -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
         -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
